@@ -146,6 +146,7 @@ raw_expression:
 | MINUS { OpSub }
 | TIMES { OpMul }
 | LT    { OpLt }
+| GT    { OpGt }
 | AND   { OpAnd }
 
 instruction:
