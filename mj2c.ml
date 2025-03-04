@@ -476,8 +476,15 @@ let instr2c
          nl
 
     | ISyso e ->
-       fprintf out "printf(\"%%d\\n\", %a);"
-         (expr2c method_name class_info) e
+      (match e.typ with
+      | TypInt ->
+        fprintf out "printf(\"%%d\\n\", %a);"
+          (expr2c method_name class_info) e
+      | TypBool ->
+        fprintf out "if(%a){printf(\"true\\n\");}else{printf(\"false\\n\");}"
+          (expr2c method_name class_info) e
+      | _ -> failwith "ISyso: type error")
+    
   in
   instr2c out ins
 

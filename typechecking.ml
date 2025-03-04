@@ -257,8 +257,13 @@ let rec typecheck_instruction (cenv : class_env) (venv : variable_env) (vinit : 
       (TMJ.IWhile (cond', ibody'), vinit)
 
   | ISyso e ->
-     let e' = typecheck_expression_expecting cenv venv vinit instanceof TypInt e in
-     (TMJ.ISyso e', vinit)
+    let e' = 
+      match typecheck_expression cenv venv vinit instanceof e with
+      | { typ = TypInt; _ } as expr -> expr
+      | { typ = TypBool; _ } as expr -> expr
+      | _ -> error e "System.out.println can only print integers or booleans"
+    in
+    (TMJ.ISyso e', vinit)
 
 (** [occurences x bindings] returns the elements in [bindings] that have [x] has identifier. *)
 let occurrences (x : string) (bindings : (identifier * 'a) list) : identifier list =
@@ -468,4 +473,3 @@ let typecheck_program (p : program) : TMJ.program =
     main_args = Location.content p.main_args;
     main      = fst (typecheck_instruction cenv venv S.empty instanceof p.main)
   }
-  
