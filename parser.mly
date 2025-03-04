@@ -8,9 +8,9 @@
 %token INTEGER BOOLEAN
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
-%token PLUS MINUS TIMES DIVIDE NOT LT OR AND GT
+%token PLUS MINUS TIMES DIVIDE NOT LT OR AND GT EQUALS
 %token COMMA SEMICOLON
-%token ASSIGN
+%token ASSIGN EQUALS
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token THIS NEW DOT LENGTH
 %token SYSO
@@ -143,6 +143,7 @@ raw_expression:
    { EUnOp (UOpNot, e) }
 
 %inline binop:
+| EQUALS { OpEq }
 | PLUS  { OpAdd }
 | MINUS { OpSub }
 | TIMES { OpMul }
