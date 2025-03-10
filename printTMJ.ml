@@ -15,6 +15,8 @@ let constant out = function
 
 (** [binop out op] prints the binary operator [op] on the output channel [out]. *)
 let binop out = function
+  | OpEq ->
+   fprintf out "=="
   | OpAdd ->
      fprintf out "+"
   | OpSub ->
@@ -117,8 +119,17 @@ and expr6 out e = match e.raw_expression with
   | _ ->
      expr5 out e
 
+and expr7 out e = match e.raw_expression with
+   | EBinOp (OpEq as op, e1, e2) ->
+      fprintf out "%a %a %a"
+         expr7 e1
+         binop op
+         expr7 e2
+   | _ ->
+      expr6 out e
+
 and expr out e = 
-   expr6 out e
+   expr7 out e
 
 (** [binop out ins] prints the instruction [ins] on the output channel [out]. *)
 let rec instr out = function
@@ -141,6 +152,12 @@ let rec instr out = function
       fprintf out "while (%a) %a"
         expr c
         instr i
+  | IFor (v,c,incr, i) ->
+      fprintf out "for (%a;%a;%a) %a"
+         instr v
+         expr c
+         instr incr
+         instr i
   | IBlock is ->
      fprintf out "{%a%t}"
        (indent indentation (sep_list nl instr)) is

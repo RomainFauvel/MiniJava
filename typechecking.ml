@@ -169,6 +169,9 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
   | EBinOp (op, e1, e2) ->
       let expected, returned =
         match op with
+        | OpEq -> 
+            let e1' = typecheck_expression cenv venv vinit instanceof e1 in
+            if e1'.typ = TypInt then TypInt, TypBool else TypBool, TypBool
         | OpAdd
         | OpSub
         | OpMul -> TypInt, TypInt
@@ -256,9 +259,16 @@ let rec typecheck_instruction (cenv : class_env) (venv : variable_env) (vinit : 
       let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
       (TMJ.IWhile (cond', ibody'), vinit)
 
+  | IFor (var, cond, incr, ibody) ->
+      let var' , vinit = typecheck_instruction cenv venv vinit instanceof var in
+      let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
+      let incr' , vinit = typecheck_instruction cenv venv vinit instanceof incr in
+      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
+      (TMJ.IFor (var', cond', incr', ibody'), vinit)
+
   | ISyso e ->
     let e' = 
-      match typecheck_expression cenv venv vinit instanceof e with
+      match typecheck_expression cenv venv vinit instanceof e  with
       | { typ = TypInt; _ } as expr -> expr
       | { typ = TypBool; _ } as expr -> expr
       | _ -> error e "System.out.println can only print integers or booleans"

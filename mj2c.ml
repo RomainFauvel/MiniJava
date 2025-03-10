@@ -470,7 +470,12 @@ let instr2c
        fprintf out "while (%a) %a"
          (expr2c method_name class_info) c
          instr2c i
-
+    | IFor (v,c,incr,i) ->
+          fprintf out "for (%a;%a;%a) %a"
+            instr2c v
+            (expr2c method_name class_info) c
+            instr2c incr
+            instr2c i
     | IBlock is ->
        fprintf out "{%a%t}"
          (indent indentation (sep_list nl instr2c)) is
