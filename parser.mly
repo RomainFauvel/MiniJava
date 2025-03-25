@@ -6,6 +6,7 @@
 %token <int32> INT_CONST
 %token <bool> BOOL_CONST
 %token <float> FLOAT_CONST
+%token <string> STRING_CONST
 %token INTEGER BOOLEAN FLOAT
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
@@ -110,11 +111,17 @@ expression:
    { e }
 
 raw_expression:
+| f = FLOAT_CONST
+   { EConst (ConstFloat f) }
+
 | i = INT_CONST
    { EConst (ConstInt i) }
 
 | b = BOOL_CONST
    { EConst (ConstBool b) }
+
+| s = STRING_CONST
+   { EConst (ConstString s) }
 
 | id = IDENT
    { EGetVar id }
@@ -193,6 +200,8 @@ typ:
    { TypBool }
 | FLOAT
    { TypFloat }
+| STRING
+   { TypString }
 | INTEGER LBRACKET RBRACKET
    { TypIntArray }
 | id = IDENT

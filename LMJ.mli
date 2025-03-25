@@ -26,6 +26,7 @@ and constant =
   | ConstBool of bool (** Boolean constant [true] or [false]. *)
   | ConstInt of int32 (** Integer constant [[-2^31, 2^31 - 1]]. *)
   | ConstFloat of float (** Float constant. *)
+  | ConstString of string (** String constant. *)
 
 and binop =
   | OpEq (** Binary operator [==]. *)
@@ -55,6 +56,7 @@ and typ =
   | TypInt (** Type [int]. *)
   | TypBool (** Type [bool]. *)
   | TypFloat (** Type [float]. *)
+  | TypString (** Type [string]. *)
   | TypIntArray (** Type [int[]]. *)
   | Typ of identifier (** A class type. *)
 

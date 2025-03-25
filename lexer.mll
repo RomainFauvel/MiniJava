@@ -18,8 +18,9 @@ let digit = ['0'-'9']
 let integer = digit+
 let space = [' ' '\t' '\r']
 let letter = ['a'-'z''A'-'Z''_']
-let float = digit+ "." digit+ 'f'
+let float = digit+ "." digit+ ('e' ('+'|'-')? digit+)? | digit+ 
 let ident = letter (digit | letter)*
+let string = '"' [^ '"']* '"'
 
 rule get_token = parse
   | "//" [^ '\n']* '\n'
@@ -60,7 +61,7 @@ rule get_token = parse
   | "return"  { RETURN }
   | "String"  { STRING }
   | "extends" { EXTENDS }
-  | "new"     { NEW }
+  | "new"     { NEW } 
   | "this"    { THIS }
   | "length"  { LENGTH }
   | "System.out.println" { SYSO }
@@ -69,6 +70,20 @@ rule get_token = parse
   | "do"    { DO }
   | "while" { WHILE }
   | "for"   { FOR }
+  
+  | string as s
+  { 
+    try 
+      STRING_CONST (String.sub s 1 (String.length s - 2))
+    with Failure _ ->
+        raise (Error "Invalid string constant")}
+  | float as f 'f'
+    {
+      try
+        FLOAT_CONST (float_of_string f)
+      with Failure _ ->
+        raise (Error "Invalid float constant")
+    }
   | integer as i
       {
         try
@@ -77,13 +92,6 @@ rule get_token = parse
           INT_CONST (Int32.of_string i)
         with Failure _ ->
           raise (Error "Invalid integer constant")
-      }
-  | float as f
-      {
-        try
-          FLOAT_CONST (float_of_string f)
-        with Failure _ ->
-          raise (Error "Invalid float constant")
       }
   | ident as id { IDENT (Location.make (lexeme_start_p lexbuf) (lexeme_end_p lexbuf) id) }
   | "//" [^ '\n']* eof

@@ -290,6 +290,7 @@ let constant2c
   | ConstBool false -> fprintf out "0"
   | ConstInt i      -> fprintf out "%ld" i
   | ConstFloat f    -> fprintf out "%f" f
+  | ConstString s   -> fprintf out "\"%s\"" s
 
 (** [binop2c out op] transpiles the binary operator [op] to C on the output channel [out]. *)
 let binop2c
@@ -317,6 +318,7 @@ let type2c
   | TypInt -> fprintf out "int"
   | TypFloat -> fprintf out "float"
   | TypBool -> fprintf out "int"
+  | TypString -> fprintf out "char*" (* char* is used to represent a string in C *)
   | TypIntArray -> fprintf out "struct %s*" !struct_array_name
   | Typ t -> fprintf out "struct %s*" t
 
@@ -430,10 +432,23 @@ let expr2c
          expr2c e
 
     | EBinOp (op, e1, e2) ->
-       fprintf out "(%a %a %a)"
-         expr2c e1
-         binop2c op
-         expr2c e2
+      if op = OpAdd && e1.typ = TypString && e2.typ = TypString then
+        (* String concatenation *)
+        fprintf out "({ char* %s = %a; char* %s = %a; \
+                      char* result = malloc(strlen(%s) + strlen(%s) + 1); \
+                      strcpy(result, %s); \
+                      strcat(result, %s); \
+                      result; })"
+          !name1 expr2c e1
+          !name2 expr2c e2
+          !name1 !name2
+          !name1
+          !name2
+      else
+        fprintf out "(%a %a %a)"
+          expr2c e1
+          binop2c op
+          expr2c e2
   in
   expr2c out expr
 
@@ -499,6 +514,9 @@ let instr2c
           (expr2c method_name class_info) e
       | TypBool ->
         fprintf out "if(%a){printf(\"true\\n\");}else{printf(\"false\\n\");}"
+          (expr2c method_name class_info) e
+      | TypString ->
+        fprintf out "printf(\"%%s\\n\", %a);"
           (expr2c method_name class_info) e
       | _ -> failwith "ISyso: type error")
     

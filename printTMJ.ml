@@ -10,8 +10,12 @@ let constant out = function
      fprintf out "true"
   | ConstBool false ->
      fprintf out "false"
+   | ConstFloat f ->
+       fprintf out "%f" f
   | ConstInt i ->
      fprintf out "%ld" i
+   | ConstString s ->
+       fprintf out "\"%s\"" s
 
 (** [binop out op] prints the binary operator [op] on the output channel [out]. *)
 let binop out = function
@@ -174,6 +178,8 @@ let rec instr out = function
 let typ out = function
   | TypInt ->
      fprintf out "int"
+   | TypString ->
+       fprintf out "string"
   | TypFloat ->
      fprintf out "float"
   | TypBool ->
