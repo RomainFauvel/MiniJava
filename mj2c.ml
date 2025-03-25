@@ -289,6 +289,7 @@ let constant2c
   | ConstBool true  -> fprintf out "1"
   | ConstBool false -> fprintf out "0"
   | ConstInt i      -> fprintf out "%ld" i
+  | ConstFloat f    -> fprintf out "%f" f
 
 (** [binop2c out op] transpiles the binary operator [op] to C on the output channel [out]. *)
 let binop2c
@@ -314,6 +315,7 @@ let type2c
     : unit =
   match typ with
   | TypInt -> fprintf out "int"
+  | TypFloat -> fprintf out "float"
   | TypBool -> fprintf out "int"
   | TypIntArray -> fprintf out "struct %s*" !struct_array_name
   | Typ t -> fprintf out "struct %s*" t
@@ -470,8 +472,14 @@ let instr2c
        fprintf out "while (%a) %a"
          (expr2c method_name class_info) c
          instr2c i
+
+    | IDoWhile (i, c) ->
+        fprintf out "do %a while (%a);"
+          instr2c i
+          (expr2c method_name class_info) c
+
     | IFor (v,c,incr,i) ->
-          fprintf out "for (%a;%a;%a) %a"
+          fprintf out "for (%a%a;({%a})) %a"
             instr2c v
             (expr2c method_name class_info) c
             instr2c incr
@@ -485,6 +493,9 @@ let instr2c
       (match e.typ with
       | TypInt ->
         fprintf out "printf(\"%%d\\n\", %a);"
+          (expr2c method_name class_info) e
+      | TypFloat ->
+        fprintf out "printf(\"%%f\\n\", %a);"
           (expr2c method_name class_info) e
       | TypBool ->
         fprintf out "if(%a){printf(\"true\\n\");}else{printf(\"false\\n\");}"

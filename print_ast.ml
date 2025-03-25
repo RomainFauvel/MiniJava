@@ -188,6 +188,16 @@ let rec print_instruction prefix out i =
      fprintf out "IBlock\n%a"
        (print_instruction_list prefix) l
   | IIf (e, i1, i2) ->
+    (match i2 with
+    | IBlock [] ->
+       fprintf out "IIf\n%s%s%a\n%s%s%a"
+         prefix'
+         branch
+         (print_expression (prefix' ^ pipe)) e
+         prefix'
+         branch_end
+         (print_instruction prefix') i1
+    | _ ->
      fprintf out "IIf\n%s%s%a\n%s%s%a\n%s%s%a"
        prefix'
        branch
@@ -198,6 +208,7 @@ let rec print_instruction prefix out i =
        prefix'
        branch_end
        (print_instruction prefix') i2
+    )
   | IWhile (e, i) ->
      fprintf out "IWhile\n%s%s%a\n%s%s%a"
        prefix'
@@ -206,6 +217,14 @@ let rec print_instruction prefix out i =
        prefix'
        branch_end
        (print_instruction prefix') i
+  | IDoWhile (i, e) ->
+      fprintf out "IDoWhile\n%s%s%a\n%s%s%a"
+        prefix'
+        branch
+        (print_instruction (prefix' ^ pipe)) i
+        prefix'
+        branch_end
+        (print_expression prefix') e
   | IFor (v, e, incr, i) ->
      fprintf out "IFor\n%s%s%a\n%s%s%a\n%s%s%a\n%s%s%a"
        prefix'

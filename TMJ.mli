@@ -20,6 +20,7 @@ and raw_expression =
 and constant = LMJ.constant =
   | ConstBool of bool
   | ConstInt of int32
+  | ConstFloat of float
 
 and binop = LMJ.binop =
   | OpEq
@@ -38,6 +39,7 @@ and instruction =
   | IBlock of instruction list
   | IIf of expression * instruction * instruction
   | IWhile of expression * instruction
+  | IDoWhile of instruction * expression
   | IFor of instruction * expression * instruction * instruction
   | ISyso of expression
   | ISetVar of identifier * typ * expression
@@ -46,6 +48,7 @@ and instruction =
 and typ =
   | TypInt
   | TypBool
+  | TypFloat
   | TypIntArray
   | Typ of identifier
 

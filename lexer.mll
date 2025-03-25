@@ -18,6 +18,7 @@ let digit = ['0'-'9']
 let integer = digit+
 let space = [' ' '\t' '\r']
 let letter = ['a'-'z''A'-'Z''_']
+let float = digit+ "." digit+ 'f'
 let ident = letter (digit | letter)*
 
 rule get_token = parse
@@ -48,6 +49,7 @@ rule get_token = parse
   | "false"   { BOOL_CONST false }
   | "int"     { INTEGER }
   | "boolean" { BOOLEAN }
+  | "float"   { FLOAT }
   | "!"       { NOT }
   | ","       { COMMA }
   | "class"   { CLASS }
@@ -64,6 +66,7 @@ rule get_token = parse
   | "System.out.println" { SYSO }
   | "if"    { IF }
   | "else"  { ELSE }
+  | "do"    { DO }
   | "while" { WHILE }
   | "for"   { FOR }
   | integer as i
@@ -74,6 +77,13 @@ rule get_token = parse
           INT_CONST (Int32.of_string i)
         with Failure _ ->
           raise (Error "Invalid integer constant")
+      }
+  | float as f
+      {
+        try
+          FLOAT_CONST (float_of_string f)
+        with Failure _ ->
+          raise (Error "Invalid float constant")
       }
   | ident as id { IDENT (Location.make (lexeme_start_p lexbuf) (lexeme_end_p lexbuf) id) }
   | "//" [^ '\n']* eof

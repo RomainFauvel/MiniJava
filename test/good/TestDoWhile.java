@@ -1,4 +1,4 @@
-class TestEq {
+class TestDoWhile {
     public static void main(String[] args) {
         {
            System.out.println(new LaClassADallas().run());
@@ -8,9 +8,12 @@ class TestEq {
 class LaClassADallas{
     public int run(){
         int i;
-        for(i = 0; i < 10; i = i + 1;) {
+        i = 0;
+        do {
                 System.out.println(i);
+                i = i + 1;
             }
+            while(i < 10);
         return 0;
     }
 

@@ -152,6 +152,10 @@ let rec instr out = function
       fprintf out "while (%a) %a"
         expr c
         instr i
+  | IDoWhile(i, c) ->
+      fprintf out "do %a while (%a);"
+        instr i
+        expr c
   | IFor (v,c,incr, i) ->
       fprintf out "for (%a;%a;%a) %a"
          instr v
@@ -170,6 +174,8 @@ let rec instr out = function
 let typ out = function
   | TypInt ->
      fprintf out "int"
+  | TypFloat ->
+     fprintf out "float"
   | TypBool ->
      fprintf out "boolean"
   | TypIntArray ->

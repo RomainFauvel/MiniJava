@@ -5,7 +5,8 @@
 
 %token <int32> INT_CONST
 %token <bool> BOOL_CONST
-%token INTEGER BOOLEAN
+%token <float> FLOAT_CONST
+%token INTEGER BOOLEAN FLOAT
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
 %token PLUS MINUS TIMES DIVIDE NOT LT OR AND GT EQUALS
@@ -14,7 +15,7 @@
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token THIS NEW DOT LENGTH
 %token SYSO
-%token IF ELSE WHILE FOR
+%token IF ELSE WHILE FOR DO
 %token EOF
 
 %left OR
@@ -166,13 +167,19 @@ instruction:
 | SYSO LPAREN e = expression RPAREN SEMICOLON
    { ISyso e }
 
+| IF LPAREN c = expression RPAREN i = instruction
+   { IIf (c, i, IBlock []) }
+
 | IF LPAREN c = expression RPAREN i1 = instruction ELSE i2 = instruction
    { IIf (c, i1, i2) }
 
 | WHILE LPAREN c = expression RPAREN i = instruction
    { IWhile (c, i) }
 
-| FOR LPAREN init=instruction c = expression SEMICOLON incr=instruction RPAREN i = instruction
+| DO i = instruction WHILE LPAREN c = expression RPAREN SEMICOLON
+   { IDoWhile (i, c) }
+
+| FOR LPAREN init=instruction c=expression SEMICOLON incr=instruction RPAREN i=instruction
    { IFor (init, c, incr, i) }
 
 block:
@@ -184,6 +191,8 @@ typ:
    { TypInt }
 | BOOLEAN
    { TypBool }
+| FLOAT
+   { TypFloat }
 | INTEGER LBRACKET RBRACKET
    { TypIntArray }
 | id = IDENT

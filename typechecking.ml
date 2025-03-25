@@ -58,6 +58,7 @@ let clookup : identifier -> class_env -> class_type = lookup "class"
 let rec compatible (typ1 : typ) (typ2 : typ) (instanceof : identifier -> identifier -> bool) : bool =
   match typ1, typ2 with
   | TypInt, TypInt
+  | TypFloat, TypFloat
   | TypBool, TypBool
   | TypIntArray, TypIntArray -> true
   | Typ t1, Typ t2 -> instanceof t1 t2
@@ -66,6 +67,7 @@ let rec compatible (typ1 : typ) (typ2 : typ) (instanceof : identifier -> identif
 (** [typ_lmj_to_tmj t] converts the [LMJ] type [t] into the equivalent [TMJ] type. *)
 let rec type_lmj_to_tmj = function
   | TypInt      -> TMJ.TypInt
+  | TypFloat    -> TMJ.TypFloat
   | TypBool     -> TMJ.TypBool
   | TypIntArray -> TMJ.TypIntArray
   | Typ id      -> TMJ.Typ (Location.content id)
@@ -73,6 +75,7 @@ let rec type_lmj_to_tmj = function
 (** [typ_tmj_to_lmj s e t] converts the [TMJ] type [t] into the equivalent [LMJ] type using location starting position [s] and location ending position [e]. *)
 let rec type_tmj_to_lmj startpos endpos = function
 | TMJ.TypInt      -> TypInt
+| TMJ.TypFloat    -> TypFloat
 | TMJ.TypBool     -> TypBool
 | TMJ.TypIntArray -> TypIntArray
 | TMJ.Typ id      -> Typ (Location.make startpos endpos id)
@@ -80,6 +83,7 @@ let rec type_tmj_to_lmj startpos endpos = function
 (** [tmj_type_to_string t] converts the [TMJ] type [t] into a string representation. *)
 let rec tmj_type_to_string : TMJ.typ -> string = function
   | TMJ.TypInt -> "integer"
+  | TMJ.TypFloat -> "float"
   | TMJ.TypBool -> "boolean"
   | TMJ.TypIntArray -> "int[]"
   | TMJ.Typ t -> t
@@ -151,6 +155,9 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
   | EConst (ConstInt i) ->
       mke (TMJ.EConst (ConstInt i)) TypInt
 
+  | EConst (ConstFloat f) ->
+      mke (TMJ.EConst (ConstFloat f)) TypFloat
+
   | EGetVar v ->
      let typ = vlookup v venv in
      let v' = Location.content v in
@@ -174,8 +181,16 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
             if e1'.typ = TypInt then TypInt, TypBool else TypBool, TypBool
         | OpAdd
         | OpSub
-        | OpMul -> TypInt, TypInt
-        | OpDiv -> TypInt, TypInt
+        | OpMul 
+        | OpDiv -> 
+          (
+          match (typecheck_expression cenv venv vinit instanceof e1, typecheck_expression cenv venv vinit instanceof e2) with
+          | { typ = TypInt; _ }, { typ = TypInt; _ } -> TypInt, TypInt
+          | { typ = TypFloat; _ }, { typ = TypFloat; _ }
+          | { typ = TypInt; _ }, { typ = TypFloat; _ }
+          | { typ = TypFloat; _ }, { typ = TypInt; _ } -> TypFloat, TypFloat
+          | _ -> error e "Arithmetic operations can only be performed on integers or floats"
+          )
         | OpLt  -> TypInt, TypBool
         | OpGt  -> TypInt, TypBool
         | OpAnd -> TypBool, TypBool
@@ -258,6 +273,11 @@ let rec typecheck_instruction (cenv : class_env) (venv : variable_env) (vinit : 
       let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
       let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
       (TMJ.IWhile (cond', ibody'), vinit)
+  
+  | IDoWhile (ibody, cond) ->
+      let ibody', vinit = typecheck_instruction cenv venv vinit instanceof ibody in
+      let cond' = typecheck_expression_expecting cenv venv vinit instanceof TypBool cond in
+      (TMJ.IDoWhile (ibody', cond'), vinit)
 
   | IFor (var, cond, incr, ibody) ->
       let var' , vinit = typecheck_instruction cenv venv vinit instanceof var in
