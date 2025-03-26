@@ -63,6 +63,10 @@ let print_constant out = function
      fprintf out "ConstBool %s" (string_of_bool b)
   | ConstInt i ->
      fprintf out "ConstInt %ld" i
+  | ConstFloat f ->
+      fprintf out "ConstFloat %f" f
+  | ConstString s ->
+      fprintf out "ConstString \"%s\"" s
 
 (** [print_unop out op] prints the unary operator [op] on the output channel [out]. *)
 let print_unop out = function
@@ -89,6 +93,8 @@ let print_binop out = function
      fprintf out "OpAnd"
   | OpOr ->
      fprintf out "OpOr"
+  | OpXor ->
+      fprintf out "OpXor"
 
 (** [print_expression prefix out e] prints the expression [e] on the output channel [out].
     [prefix] is the string already printed just before [e]. *)
@@ -272,6 +278,10 @@ let print_type out typ =
      fprintf out "int"
   | TypBool ->
      fprintf out "bool"
+  | TypFloat ->
+      fprintf out "float"
+  | TypString ->
+      fprintf out "string"
   | TypIntArray ->
      fprintf out "int[]"
   | Typ id ->

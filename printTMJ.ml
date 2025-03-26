@@ -37,6 +37,8 @@ let binop out = function
      fprintf out "&&"
   | OpOr ->
      fprintf out "||"
+  | OpXor ->
+     fprintf out "^"
 
 (** [expr out e], [expr0 out e], ..., [expr6 out e] print the expression [e]
     on the output channel [out]. [expr] is a synonym for [expr6].
@@ -115,7 +117,7 @@ and expr5 out e = match e.raw_expression with
      expr4 out e
 
 and expr6 out e = match e.raw_expression with
-  | EBinOp ((OpLt | OpOr | OpAnd | OpGt) as op, e1, e2) ->
+  | EBinOp ((OpLt | OpOr | OpAnd | OpGt | OpXor) as op, e1, e2) ->
      fprintf out "%a %a %a"
        expr6 e1
        binop op

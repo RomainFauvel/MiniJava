@@ -10,7 +10,7 @@
 %token INTEGER BOOLEAN FLOAT
 %token <string Location.t> IDENT
 %token CLASS PUBLIC STATIC VOID MAIN STRING EXTENDS RETURN
-%token PLUS MINUS TIMES DIVIDE NOT LT OR AND GT EQUALS
+%token PLUS MINUS TIMES DIVIDE NOT LT OR AND GT EQUALS XOR
 %token COMMA SEMICOLON
 %token ASSIGN
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
@@ -160,6 +160,7 @@ raw_expression:
 | GT    { OpGt }
 | AND   { OpAnd }
 | OR   { OpOr }
+| XOR   { OpXor }
 
 instruction:
 | b = block

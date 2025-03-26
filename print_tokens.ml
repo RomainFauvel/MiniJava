@@ -68,6 +68,8 @@ let print_token show_loc out = function
      fprintf out "AND"
   | OR ->
      fprintf out "OR"
+  | XOR ->
+     fprintf out "XOR"
   | COMMA ->
      fprintf out "COMMA"
   | SEMICOLON ->

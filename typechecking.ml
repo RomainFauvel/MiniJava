@@ -204,9 +204,7 @@ and typecheck_expression (cenv : class_env) (venv : variable_env) (vinit : S.t)
               | TypFloat, TypInt -> mke (TMJ.EBinOp (op, e1', e2')) TypFloat
               | _ -> error e1 "Invalid operand types for arithmetic operator"
             end
-          | OpEq | OpLt | OpGt -> 
-              mke (TMJ.EBinOp (op, e1', e2')) TypBool
-          | OpAnd | OpOr -> 
+          | OpEq | OpLt | OpGt | OpAnd | OpOr | OpXor-> 
               mke (TMJ.EBinOp (op, e1', e2')) TypBool
       end
 
