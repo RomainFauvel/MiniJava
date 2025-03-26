@@ -18,7 +18,7 @@ let digit = ['0'-'9']
 let integer = digit+
 let space = [' ' '\t' '\r']
 let letter = ['a'-'z''A'-'Z''_']
-let float = digit+ "." digit+ ('e' ('+'|'-')? digit+)? | digit+ 
+let float = '-'? digit+ "." digit+ ('e' ('+'|'-')? digit+)? | digit+ 
 let ident = letter (digit | letter)*
 let string = '"' [^ '"']* '"'
 

@@ -375,16 +375,28 @@ let expr2c
        let clas = get_class o.typ in
        let class_info = get_class_info clas in
        let index = ClassInfo.vtable_index callee class_info in
-       let typ = ClassInfo.return_type callee class_info in
-       fprintf out "({ struct %s* %s = %a; %a %s->vtable[%d](%s%a); })"
-         clas
-         !name1
-         expr2c o
-         cast typ
-         !name1
-         index
-         !name1
-         (prec_list comma expr2c) args
+       let typ = ClassInfo.return_type callee class_info in 
+       begin
+        match typ with
+            |TypFloat -> fprintf out "({ struct %s* %s = %a;  int x = %s->vtable[%d](%s%a);({*(float*)&x;}); })"
+              clas
+              !name1
+              expr2c o
+              !name1
+              index
+              !name1
+              (prec_list comma expr2c) args
+            |_ ->
+              fprintf out "({ struct %s* %s = %a; %a %s->vtable[%d](%s%a); })"
+                clas
+                !name1
+                expr2c o
+                cast typ
+                !name1
+                index
+                !name1
+                (prec_list comma expr2c) args
+        end
 
     | EArrayAlloc e ->
        fprintf out "(void*)({ int %s = %a; \
@@ -593,6 +605,12 @@ let method_definition2c
   let class_info = get_class_info class_name in
   let method_definition out (method_name, m) =
     let return2c out e =
+      match e.typ with
+      | TypInt | TypBool | TypString -> fprintf out "return (void*)(%a);"
+        (expr2c method_name class_info) e
+      | TypFloat -> fprintf out "return (void*)({float f=%a;int temp =*((int*)&f);temp;});"
+        (expr2c method_name class_info) e
+      | _ ->
       fprintf out "return (void*)(%a);"
         (expr2c method_name class_info) e
     in
